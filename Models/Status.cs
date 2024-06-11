@@ -3,19 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace WoodgroveDemo.Models
 {
-    public class StatusCallbacks
-    {
-        public string Timing { get; set; }
-        public string Message { get; set; }
-        public string Payload { get; set; }
-
-        public StatusCallbacks(string message, string timing, string payload)
-        {
-            this.Message = message;
-            this.Timing = timing;
-            this.Payload = payload;
-        }
-    }
 
     public class Status
     {
@@ -85,5 +72,17 @@ namespace WoodgroveDemo.Models
         }
     }
 
+        public class StatusCallbacks
+    {
+        public string Timing { get; set; }
+        public string Message { get; set; }
+        public string Payload { get; set; }
 
+        public StatusCallbacks(string message, string timing, string payload)
+        {
+            this.Message = message;
+            this.Timing = timing;
+            this.Payload = payload;
+        }
+    }
 }

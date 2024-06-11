@@ -36,7 +36,7 @@ namespace WoodgroveDemo.Helpers
             return certificateDescription.Certificate;
         }
 
-        public static async Task<string> AcquireToken(Settings settings, IMemoryCache cache)
+        public static async Task<string> AcquireToken(AppSettings settings, IMemoryCache cache)
         {
             // Aquire an access token which will be sent as bearer to the request API
             // Try to read the manifest from the cache using its URL key
@@ -60,7 +60,7 @@ namespace WoodgroveDemo.Helpers
             //return returnValue;
         }
 
-        public static async Task<(string token, string error, string error_description)> GetAccessToken(Settings settings, string[] scopes = null)
+        public static async Task<(string token, string error, string error_description)> GetAccessToken(AppSettings settings, string[] scopes = null)
         {
             // You can run this sample using ClientSecret or Certificate. The code will differ only when instantiating the IConfidentialClientApplication
             string authority = $"{settings.EntraID.Authority}{settings.EntraID.TenantId}";

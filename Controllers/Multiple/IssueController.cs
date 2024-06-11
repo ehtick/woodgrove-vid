@@ -9,9 +9,10 @@ using Microsoft.Extensions.Caching.Memory;
 using WoodgroveDemo.Helpers;
 using WoodgroveDemo.Models;
 using Microsoft.Extensions.Logging;
-using WoodgroveDemo.Models.Issuance;
+using Microsoft.Identity.VerifiedID.Issuance;
 using System.Net.Http.Headers;
 using System.Text;
+using Microsoft.Identity.VerifiedID;
 
 namespace WoodgroveDemo.Controllers.Multiple;
 
@@ -22,7 +23,7 @@ public class IssueController : ControllerBase
     protected readonly IConfiguration _Configuration;
     protected TelemetryClient _Telemetry;
     protected IMemoryCache _Cache;
-    protected Settings _Settings { get; set; }
+    protected AppSettings _AppSettings { get; set; }
     protected readonly IHttpClientFactory _HttpClientFactory;
     public ResponseToClient _Response { get; set; } = new ResponseToClient();
 
@@ -34,7 +35,7 @@ public class IssueController : ControllerBase
         _HttpClientFactory = httpClientFactory;
 
         // Load the settings of this demo
-        _Settings = new Settings(configuration, "Multiple", false);
+        _AppSettings = new AppSettings(configuration, "Multiple", false);
     }
 
     [AllowAnonymous]
@@ -50,14 +51,14 @@ public class IssueController : ControllerBase
         try
         {
             // Create an issuance request object
-            IssuanceRequest request = RequestHelper.CreateIssuanceRequest(_Settings, this.Request, true);
+            IssuanceRequest request = RequestHelper.CreateIssuanceRequest(_AppSettings, this.Request, true);
 
             // Generate a card number
             Random r = new Random();
             long cardId = r.NextInt64(1234567890, 9976654334);
 
             // For the idTokenHint attestation flow, add the nesassery claims
-            request.claims = new Dictionary<string, string>
+            request.Claims = new Dictionary<string, string>
                     {
                         { "id", cardId.ToString() },
                         { "sum", "150$" }
@@ -68,11 +69,11 @@ public class IssueController : ControllerBase
 
             // Prepare the HTTP request with the Bearer access token and the request body
             var client = _HttpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await MsalAccessTokenHandler.AcquireToken(_Settings, _Cache));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await MsalAccessTokenHandler.AcquireToken(_AppSettings, _Cache));
 
             // Call the Microsoft Entra ID request endpoint
             HttpResponseMessage response = await client.PostAsync(
-                _Settings.RequestUrl,
+                _AppSettings.RequestUrl,
                 new StringContent(_Response.RequestPayload, Encoding.UTF8, "application/json"));
 
             // Serialize the request object to HTML format
@@ -85,26 +86,26 @@ public class IssueController : ControllerBase
             {
                 IssuanceResponse issuanceResponse = IssuanceResponse.Parse(_Response.ResponseBody);
                 _Response.ResponseBody = issuanceResponse.ToHtml();
-                _Response.QrCodeUrl = issuanceResponse.url;
-                _Response.pinCode = request.pin.value;
+                _Response.QrCodeUrl = issuanceResponse.Url;
+                _Response.PinCode = request.PIN.Value;
 
                 // Add the state ID to the user's session object 
-                this.HttpContext.Session.SetString("state", request.callback.state);
+                this.HttpContext.Session.SetString("state", request.Callback.State);
 
                 // Add the global cache with the request status
-                status.RequestStateId = request.callback.state;
-                status.RequestStatus = Constants.RequestStatus.REQUEST_CREATED;
+                status.RequestStateId = request.Callback.State;
+                status.RequestStatus = UserMessages.REQUEST_CREATED;
                 status.AddHistory(status.RequestStatus, status.CalculateExecutionTime());
 
                 // Send telemetry from this web app to Application Insights.
                 AppInsightsHelper.TrackApi(_Telemetry, this.Request, status);
 
                 // Add the status object to the cache
-                _Cache.Set(request.callback.state, status.ToString(), DateTimeOffset.Now.AddMinutes(Constants.AppSettings.CACHE_EXPIRES_IN_MINUTES));
+                _Cache.Set(request.Callback.State, status.ToString(), DateTimeOffset.Now.AddMinutes(AppSettings.CACHE_EXPIRES_IN_MINUTES));
             }
             else
             {
-                AppInsightsHelper.TrackError(_Telemetry, this.Request, Constants.ErrorMessages.API_ERROR, _Response.ResponseBody);
+                AppInsightsHelper.TrackError(_Telemetry, this.Request, UserMessages.ERROR_API_ERROR, _Response.ResponseBody);
                 _Response.ErrorMessage = _Response.ResponseBody;
                 _Response.ErrorUserMessage = ResponseError.Parse(_Response.ResponseBody).GetUserMessage();
             }

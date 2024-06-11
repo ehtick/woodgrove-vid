@@ -9,17 +9,10 @@ public class ResponseToClient
 {
     public string RequestPayload { get; set; } = string.Empty;
     public string ResponseBody { get; set; } = string.Empty;
-    // public string ManifestUrl { get; set; } = string.Empty;
-    // public string ManifestContent { get; set; } = string.Empty;
     public string ErrorMessage { get; set; } = string.Empty;
     public string ErrorUserMessage { get; set; } = string.Empty;
-    public string pinCode { get; set; } = string.Empty;
+    public string PinCode { get; set; } = string.Empty;
     public string QrCodeUrl { get; set; } = string.Empty;
-    // public string CredentialType { get; set; } = string.Empty;
-    // public Display CardDetails { get; set; }
-    // public string DefinitionPath { get; set; } = string.Empty;
-    // public bool Presentation { get; set; } = false;
-    // public string Flow { get; set; } = string.Empty;
 
 
     /// <summary>
@@ -45,8 +38,8 @@ public class ResponseToClient
     /// </summary>
     /// <param name="JsonString">The JSON string to be loaded</param>
     /// <returns></returns>
-    public static ResponseError Parse(string JsonString)
+    public static ResponseToClient Parse(string JsonString)
     {
-        return JsonSerializer.Deserialize<ResponseError>(JsonString);
+        return JsonSerializer.Deserialize<ResponseToClient>(JsonString);
     }
 }

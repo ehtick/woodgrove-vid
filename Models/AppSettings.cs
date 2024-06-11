@@ -1,11 +1,14 @@
 
 using WoodgroveDemo.Helpers;
-using WoodgroveDemo.Models.Manifest;
+using Microsoft.Identity.VerifiedID;
+using Microsoft.Identity.VerifiedID.Manifest;
 
 namespace WoodgroveDemo.Models;
-public class Settings
+public class AppSettings
 {
-    public Settings(IConfiguration configuration)
+    public const int CACHE_EXPIRES_IN_MINUTES = 10;
+    
+    public AppSettings(IConfiguration configuration)
     {
         RequestUrl = configuration.GetSection("VerifiedID:ApiEndpoint").Value!;
         UseCache = configuration.GetValue("VerifiedID:UseCache", true);
@@ -37,7 +40,7 @@ public class Settings
         RevokeCredentialsDemo.Contract = configuration["VerifiedID:RevokeCredentialsDemo:Contract"]!;
     }
 
-    public Settings(IConfiguration configuration, string definitionPath, bool isPresentation) : this(configuration)
+    public AppSettings(IConfiguration configuration, string definitionPath, bool isPresentation) : this(configuration)
     {
         Presentation = isPresentation;
         DefinitionPath = definitionPath;
@@ -46,12 +49,12 @@ public class Settings
 
         if (isPresentation)
         {
-            RequestUrl = configuration.GetSection("VerifiedID:ApiEndpoint").Value! + Constants.Endpoints.CreatePresentationRequest;
+            RequestUrl = configuration.GetSection("VerifiedID:ApiEndpoint").Value! + Endpoints.CreatePresentationRequest;
             Flow = "Presentation";
         }
         else
         {
-            RequestUrl = configuration.GetSection("VerifiedID:ApiEndpoint").Value! + Constants.Endpoints.CreateIssuanceRequest;
+            RequestUrl = configuration.GetSection("VerifiedID:ApiEndpoint").Value! + Endpoints.CreateIssuanceRequest;
             Flow = "Issuance";
         }
     }

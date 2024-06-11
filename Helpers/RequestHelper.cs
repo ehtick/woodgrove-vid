@@ -3,9 +3,9 @@ using System.Net;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Caching.Memory;
 using WoodgroveDemo.Models;
-using WoodgroveDemo.Models.Issuance;
-using WoodgroveDemo.Models.Manifest;
-using WoodgroveDemo.Models.Presentation;
+using Microsoft.Identity.VerifiedID.Issuance;
+using Microsoft.Identity.VerifiedID.Manifest;
+using Microsoft.Identity.VerifiedID.Presentation;
 
 namespace WoodgroveDemo.Helpers;
 
@@ -53,17 +53,19 @@ public class RequestHelper
 
             var client = httpClientFactory.CreateClient();
             HttpResponseMessage res = client.GetAsync(manifestUrl).Result;
-            string response = res.Content.ReadAsStringAsync().Result;
+            
             if (res.StatusCode != HttpStatusCode.OK)
             {
                 throw new Exception($"HTTP status {(int)res.StatusCode} retrieving manifest from URL {manifestUrl}");
             }
 
+            string response = res.Content.ReadAsStringAsync().Result;
+
             ManifestToken manifestObj = ManifestToken.Parse(response);
 
-            manifestObj.token = manifestObj.token.Replace("_", "/").Replace("-", "+").Split(".")[1];
-            manifestObj.token = manifestObj.token.PadRight(4 * ((manifestObj.token.Length + 3) / 4), '=');
-            returnValue = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(manifestObj.token));
+            manifestObj.Token = manifestObj.Token.Replace("_", "/").Replace("-", "+").Split(".")[1];
+            manifestObj.Token = manifestObj.Token.PadRight(4 * ((manifestObj.Token.Length + 3) / 4), '=');
+            returnValue = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(manifestObj.Token));
             cache.Set(manifestUrl, returnValue, DateTimeOffset.Now.AddMinutes(60));
         }
         else
@@ -81,35 +83,35 @@ public class RequestHelper
     /// <param name="httpRequest">The HTTP request</param>
     /// <returns></returns>
     public static IssuanceRequest CreateIssuanceRequest(
-        Settings settings,
+        AppSettings settings,
         HttpRequest httpRequest,
         bool includePIN)
     {
         IssuanceRequest request = new IssuanceRequest()
         {
-            includeQRCode = settings.UX.IncludeQRCode,
-            authority = settings.EntraID.DidAuthority,
-            registration = new Models.Issuance.Registration()
+            IncludeQRCode = settings.UX.IncludeQRCode,
+            Authority = settings.EntraID.DidAuthority,
+            Registration = new Microsoft.Identity.VerifiedID.Issuance.RequestRegistration()
             {
-                clientName = settings.UX.ClientName,
-                purpose = settings.UX.Purpose
+                ClientName = settings.UX.ClientName,
+                //purpose = settings.UX.Purpose
             },
-            callback = new Models.Issuance.Callback()
+            Callback = new Microsoft.Identity.VerifiedID.Callback()
             {
-                url = settings.Api.URL(httpRequest),
-                state = Guid.NewGuid().ToString(),
-                headers = new Dictionary<string, string>() { { "api-key", settings.Api.ApiKey } }
+                Url = settings.Api.URL(httpRequest),
+                State = Guid.NewGuid().ToString(),
+                Headers = new Dictionary<string, string>() { { "api-key", settings.Api.ApiKey } }
             },
-            type = settings.CredentialType,
-            manifest = settings.ManifestUrl,
-            pin = null
+            Type = settings.CredentialType,
+            Manifest = settings.ManifestUrl,
+            PIN = null
         };
 
-        // If the purpose is empty string, change it to null
-        if (request.registration.purpose == "")
-        {
-            request.registration.purpose = null;
-        }
+        // // If the purpose is empty string, change it to null
+        // if (request.Registration.purpose == "")
+        // {
+        //     request.registration.purpose = null;
+        // }
 
         int issuancePinCodeLength = settings.UX.IssuancePinCodeLength;
 
@@ -122,7 +124,7 @@ public class RequestHelper
         }
 
         // Set the experstion date to 60 days
-        request.expirationDate = $"{Convert.ToDateTime(DateTime.Now.AddDays(60)).ToString("yyyy-MM-dd")}T23:59:59.000Z";
+        //request.ExpirationDate = $"{Convert.ToDateTime(DateTime.Now.AddDays(60)).ToString("yyyy-MM-dd")}T23:59:59.000Z";
         return request;
     }
 
@@ -136,14 +138,14 @@ public class RequestHelper
     {
         if (string.IsNullOrWhiteSpace(pinCode))
         {
-            request.pin = null;
+            request.PIN = null;
         }
         else
         {
-            request.pin = new Pin()
+            request.PIN = new Pin()
             {
-                length = pinCode.Length,
-                value = pinCode
+                Length = pinCode.Length,
+                Value = pinCode
             };
         }
         return request;
@@ -157,32 +159,32 @@ public class RequestHelper
     /// <param name="acceptedIssuers">Array of accepted issuers</param>
     /// <returns>PresentationRequest</returns>
     public static PresentationRequest CreatePresentationRequest(
-            Settings settings,
+            AppSettings settings,
             HttpRequest httpRequest,
             string[] acceptedIssuers = null,
             bool faceCheck = false)
     {
         PresentationRequest request = new PresentationRequest()
         {
-            includeQRCode = settings.UX.IncludeQRCode,
-            authority = settings.EntraID.DidAuthority,
-            registration = new Models.Presentation.Registration()
+            IncludeQRCode = settings.UX.IncludeQRCode,
+            Authority = settings.EntraID.DidAuthority,
+            Registration = new Microsoft.Identity.VerifiedID.Presentation.RequestRegistration()
             {
-                clientName = settings.UX.ClientName,
-                purpose = settings.UX.Purpose
+                ClientName = settings.UX.ClientName,
+                Purpose = settings.UX.Purpose
             },
-            callback = new Models.Presentation.Callback()
+            Callback = new Microsoft.Identity.VerifiedID.Callback()
             {
-                url = settings.Api.URL(httpRequest),
-                state = Guid.NewGuid().ToString(),
-                headers = new Dictionary<string, string>() { { "api-key", settings.Api.ApiKey } }
+                Url = settings.Api.URL(httpRequest),
+                State = Guid.NewGuid().ToString(),
+                Headers = new Dictionary<string, string>() { { "api-key", settings.Api.ApiKey } }
             },
-            includeReceipt = settings.UX.IncludeReceipt,
-            requestedCredentials = new List<RequestedCredential>(),
+            IncludeReceipt = settings.UX.IncludeReceipt,
+            RequestedCredentials = new List<RequestedCredential>(),
         };
-        if ("" == request.registration.purpose)
+        if ("" == request.Registration.Purpose)
         {
-            request.registration.purpose = null;
+            request.Registration.Purpose = null;
         }
 
         List<string> okIssuers;
@@ -207,16 +209,16 @@ public class RequestHelper
                     bool validateLinkedDomain = true,
                     bool faceCheck = false)
     {
-        request.requestedCredentials.Add(new RequestedCredential()
+        request.RequestedCredentials.Add(new RequestedCredential()
         {
-            type = credentialType,
-            acceptedIssuers = (null == acceptedIssuers ? new List<string>() : acceptedIssuers),
-            configuration = new Configuration()
+            Type = credentialType,
+            AcceptedIssuers = (null == acceptedIssuers ? new List<string>() : acceptedIssuers),
+            Configuration = new Configuration()
             {
-                validation = new Validation()
+                Validation = new Validation()
                 {
-                    allowRevoked = allowRevoked,
-                    validateLinkedDomain = validateLinkedDomain
+                    AllowRevoked = allowRevoked,
+                    ValidateLinkedDomain = validateLinkedDomain
                 }
             }
         });
@@ -225,16 +227,14 @@ public class RequestHelper
         if (faceCheck)
         {
             // Receipt is not supported while doing faceCheck
-            request.includeReceipt = false;
+            request.IncludeReceipt = false;
 
-            request.requestedCredentials[0].configuration.validation.faceCheck = new FaceCheck()
+            request.RequestedCredentials[0].Configuration.Validation.FaceCheck = new FaceCheck()
             {
-                sourcePhotoClaimName = "photo",
-                matchConfidenceThreshold = 70
+                SourcePhotoClaimName = "photo",
+                MatchConfidenceThreshold = 70
             };
         }
-
-
 
         return request;
     }

@@ -8,9 +8,9 @@ using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Identity.VerifiedID.AdminApi;
 using WoodgroveDemo.Helpers;
 using WoodgroveDemo.Models;
-using WoodgroveDemo.Models.AdminApi;
 
 namespace WoodgroveDemo.Controllers;
 
@@ -19,7 +19,7 @@ namespace WoodgroveDemo.Controllers;
 public class RevokeController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    public Settings _settings { get; set; }
+    public AppSettings _AppSettings { get; set; }
     private readonly ILogger<CallbackController> _logger;
     private IMemoryCache _cache;
     private TelemetryClient _Telemetry;
@@ -33,7 +33,7 @@ public class RevokeController : ControllerBase
         _Telemetry = telemetry;
 
         // Load the settings of this demo
-        _settings = new Settings(configuration);
+        _AppSettings = new AppSettings(configuration);
     }
 
     [AllowAnonymous]
@@ -71,7 +71,7 @@ public class RevokeController : ControllerBase
 
             // The VC Request API is an authenticated API. 
             // To call the API, first aquire an access token which will be sent as bearer to the VC Request API
-            var accessToken = await MsalAccessTokenHandler.GetAccessToken(_settings, new string[] { _settings.RevokeCredentialsDemo.Scope });
+            var accessToken = await MsalAccessTokenHandler.GetAccessToken(_AppSettings, new string[] { _AppSettings.RevokeCredentialsDemo.Scope });
             if (accessToken.Item1 == String.Empty)
             {
                 return String.Format("Failed to acquire access token: {0} : {1}", accessToken.error, accessToken.error_description);
@@ -85,13 +85,13 @@ public class RevokeController : ControllerBase
             string HashedSearchClaimValue = string.Empty;
             using (var sha256 = SHA256.Create())
             {
-                var input = _settings.RevokeCredentialsDemo.Contract + status.IndexedClaimValue;
+                var input = _AppSettings.RevokeCredentialsDemo.Contract + status.IndexedClaimValue;
                 byte[] inputasbytes = Encoding.UTF8.GetBytes(input);
                 HashedSearchClaimValue = Convert.ToBase64String(sha256.ComputeHash(inputasbytes));
                 HashedSearchClaimValue = System.Net.WebUtility.UrlEncode(HashedSearchClaimValue);
             }
 
-            string url = $"{_settings.RevokeCredentialsDemo.Endpoint}?filter=indexclaimhash%20eq%20{HashedSearchClaimValue}";
+            string url = $"{_AppSettings.RevokeCredentialsDemo.Endpoint}?filter=indexclaimhash%20eq%20{HashedSearchClaimValue}";
             HttpResponseMessage response = await client.GetAsync(url);
 
             // Read the response content
@@ -116,7 +116,7 @@ public class RevokeController : ControllerBase
             }
 
             ///POST v1.0/verifiableCredentials/authorities/:authorityId/contracts/:contractId/credentials/:credentialid/revoke
-            url = $"{_settings.RevokeCredentialsDemo.Endpoint}/{apiResponse.value[0].id}/revoke";
+            url = $"{_AppSettings.RevokeCredentialsDemo.Endpoint}/{apiResponse.value[0].id}/revoke";
 
             response = await client.PostAsync(url, null);
 
@@ -135,7 +135,7 @@ public class RevokeController : ControllerBase
 
             // Add the revoked card indexed claim to the cache
             // We use this method to avoid a case where user can uses the card before Entra ID manages to complete the revolution
-            _cache.Set(status.IndexedClaimValue, "revoked", DateTimeOffset.Now.AddMinutes(Constants.AppSettings.CACHE_EXPIRES_IN_MINUTES));
+            _cache.Set(status.IndexedClaimValue, "revoked", DateTimeOffset.Now.AddMinutes(AppSettings.CACHE_EXPIRES_IN_MINUTES));
 
             return "OK";
         }

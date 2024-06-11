@@ -111,7 +111,7 @@
                                 data-bs-target="#DefinitionContent" type="button" role="tab"
                                 aria-controls="DefinitionContent" aria-selected="false">Definition</button>
                         </li>
-                        @if (Model._settings.Presentation)
+                        @if (Model._AppSettings.Presentation)
                         {
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link wgu_tab_link" id="ClaimsTab" data-bs-toggle="tab"
@@ -130,9 +130,9 @@
                                 @RenderSection("VerifiableCredentialDescription", required: false)
                             </p>
                             <p>
-                                Below is a representation of the <b>@Model._settings.CardDetails.Card.Title</b>
-                                credential (@Model._settings.CredentialType):<br>
-                                <partial name="CardDetails" model="@Model._settings.CardDetails" />
+                                Below is a representation of the <b>@Model._AppSettings.CardDetails.Card.Title</b>
+                                credential (@Model._AppSettings.CredentialType):<br>
+                                <partial name="CardDetails" model="@Model._AppSettings.CardDetails" />
                             </p>
 
 
@@ -148,11 +148,11 @@
                                 <li>The <b>Callback JSON payload</b> shows the JSON payload that Microsoft Entra Verified ID
                                     sends to
                                     the callback endpoint of this application.</li>
-                                <li>The <b>Credential manifest</b> renders the Verified credentials manifest JSON file.</li>
+                                <li>The <b>Credential manifest</b> renders the verified IDs manifest JSON file.</li>
                                 <li>In the <b>Definition</b> tab you can find the <a
                                         href="https://learn.microsoft.com/entra/verified-id/rules-and-display-definitions-model">rules
                                         and display definitions</a>.</li>
-                                @if (Model._settings.Presentation)
+                                @if (Model._AppSettings.Presentation)
                                 {
                                     <li>The <b>Claims</b> tab shows the content of the verified ID.</li>
                                 }
@@ -164,7 +164,7 @@
 
                             <div id="requestContent">
                                 <h4>HTTP Request</h4>
-                                <p style="margin-top: 20px;">POST @Model._settings.RequestUrl</p>
+                                <p style="margin-top: 20px;">POST @Model._AppSettings.RequestUrl</p>
                                 <code id="requestPayload">Waiting...</code>
                                 <h4 style="margin-top: 20px;">HTTP Response</h4>
                                 <code style="margin-top: 20px;" id="responseBody">Waiting...</code>
@@ -174,11 +174,11 @@
 
                         <div class="tab-pane fade" id="CallbackJsonPayloadContent" role="tabpanel"
                             aria-labelledby="CallbackJsonPayloadTab">
-                            @if (!string.IsNullOrEmpty(Model._settings.Api.URL(Context.Request)))
+                            @if (!string.IsNullOrEmpty(Model._AppSettings.Api.URL(Context.Request)))
                             {
                                 <div>
                                     <h4>HTTP request to callback endpoint</h4>
-                                    <p style="margin-top: 20px;">POST @Model._settings.Api.URL(Context.Request)</p>
+                                    <p style="margin-top: 20px;">POST @Model._AppSettings.Api.URL(Context.Request)</p>
                                 </div>
                             }
                             <div id="CallbackJsonPayload">Waiting...</div>
@@ -187,29 +187,29 @@
 
                             <p>
                             <h4>HTTP Request</h4>
-                            <p style="margin-top: 20px;">GET @Model._settings.ManifestUrl</p>
+                            <p style="margin-top: 20px;">GET @Model._AppSettings.ManifestUrl</p>
                             <h4 style="margin-top: 20px;">HTTP Response</h4>
                             </p>
 
                             <code style="margin-top: 20px;">
-                                @Html.Raw(Model._settings.ManifestContent)
+                                @Html.Raw(Model._AppSettings.ManifestContent)
                                                         </code>
                         </div>
                         <div class="tab-pane fade" id="DefinitionContent" role="tabpanel" aria-labelledby="DefinitionTab">
-                            @if (!string.IsNullOrEmpty(Model._settings.DefinitionPath))
+                            @if (!string.IsNullOrEmpty(Model._AppSettings.DefinitionPath))
                             {
                                 <div>
                                     <h4>Display definition</h4>
                                     The display definition describes the claims contained in the credential as well as the
                                     branding.<br>
 
-                                    <code id="DisplayDefinition" path="@Model._settings.DefinitionPath">
+                                    <code id="DisplayDefinition" path="@Model._AppSettings.DefinitionPath">
                                                                                                                                                                                                                     </code>
 
                                     <h4 style="margin-top: 25px;">Rules definition</h4>
                                     The rules definition determines what the user needs to do to get the credentials. <br>
 
-                                    <code id="RulesDefinition" path="@Model._settings.DefinitionPath">
+                                    <code id="RulesDefinition" path="@Model._AppSettings.DefinitionPath">
 
                                                                                                                                                                                                                     </code>
                                 </div>
@@ -220,7 +220,7 @@
                             }
 
                         </div>
-                        @if (Model._settings.Presentation)
+                        @if (Model._AppSettings.Presentation)
                         {
                             <div class="tab-pane fade" id="ClaimsContent" role="tabpanel" aria-labelledby="ClaimsTab">
 

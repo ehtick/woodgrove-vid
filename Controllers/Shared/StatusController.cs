@@ -5,6 +5,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Identity.VerifiedID;
 using WoodgroveDemo.Helpers;
 using WoodgroveDemo.Models;
 
@@ -44,7 +45,7 @@ public class StatusController : ControllerBase
             {
                 RequestStateId = "",
                 RequestStatus = "error",
-                Message = Constants.ErrorMessages.STATE_ID_NOT_FOUND
+                Message = UserMessages.ERROR_STATE_ID_NOT_FOUND
             };
         }
 
@@ -67,7 +68,7 @@ public class StatusController : ControllerBase
                 {
                     RequestStateId = "",
                     RequestStatus = "error",
-                    Message = Constants.ErrorMessages.STATE_ID_CANNOT_DESERIALIZE + ex.Message
+                    Message = UserMessages.ERROR_STATE_ID_CANNOT_DESERIALIZE + ex.Message
                 };
             }
         }
@@ -78,7 +79,7 @@ public class StatusController : ControllerBase
             {
                 RequestStateId = state,
                 RequestStatus = "error",
-                Message = Constants.ErrorMessages.STATE_OBJECT_NOT_FOUND
+                Message = UserMessages.ERROR_STATE_OBJECT_NOT_FOUND 
             };
         }
     }
@@ -87,64 +88,29 @@ public class StatusController : ControllerBase
     {
         switch (status.RequestStatus)
         {
-            case Constants.RequestStatus.REQUEST_CREATED:
-                status.Message = Constants.RequestStatusMessage.REQUEST_CREATED;
+            case UserFlowStatusCodes.REQUEST_CREATED:
+                status.Message = UserMessages.REQUEST_CREATED;
                 break;
-            case Constants.RequestStatus.REQUEST_RETRIEVED:
-                status.Message = Constants.RequestStatusMessage.REQUEST_RETRIEVED;
+            case UserFlowStatusCodes.REQUEST_RETRIEVED:
+                status.Message = UserMessages.REQUEST_RETRIEVED;
                 break;
-            case Constants.RequestStatus.ISSUANCE_ERROR:
-                status.Message = Constants.RequestStatusMessage.ISSUANCE_ERROR;
+            case UserFlowStatusCodes.ISSUANCE_ERROR:
+                status.Message = UserMessages.ISSUANCE_ERROR;
                 break;
-            case Constants.RequestStatus.ISSUANCE_SUCCESSFUL:
-                status.Message = Constants.RequestStatusMessage.ISSUANCE_SUCCESSFUL;
+            case UserFlowStatusCodes.ISSUANCE_SUCCESSFUL:
+                status.Message = UserMessages.ISSUANCE_SUCCESSFUL;
                 break;
-            case Constants.RequestStatus.PRESENTATION_ERROR:
-                status.Message = Constants.RequestStatusMessage.ISSUANCE_ERROR;
+            case UserFlowStatusCodes.PRESENTATION_ERROR:
+                status.Message = UserMessages.ISSUANCE_ERROR;
                 break;
-            case Constants.RequestStatus.PRESENTATION_VERIFIED:
-                status.Message = Constants.RequestStatusMessage.PRESENTATION_VERIFIED;
+            case UserFlowStatusCodes.PRESENTATION_VERIFIED:
+                status.Message = UserMessages.PRESENTATION_VERIFIED;
                 break;
-            // TBD add the claims to render
-            //     callback = JsonConvert.DeserializeObject<CallbackEvent>(reqState["callback"].ToString());
-            //     JObject resp = JObject.Parse(JsonConvert.SerializeObject(new
-            //     {
-            //         status = requestStatus,
-            //         message = Constants.RequestStatusMessage.PRESENTATION_VERIFIED,
-            //         type = callback.verifiedCredentialsData[0].type,
-            //         claims = callback.verifiedCredentialsData[0].claims,
-            //         subject = callback.subject,
-            //         payload = callback.verifiedCredentialsData,
-            //     }, Newtonsoft.Json.Formatting.None, new JsonSerializerSettings
-            //     {
-            //         NullValueHandling = NullValueHandling.Ignore
-            //     }));
-            //     if (null != callback.receipt && null != callback.receipt.vp_token)
-            //     {
-            //         JObject vpToken = GetJsonFromJwtToken(callback.receipt.vp_token[0]);
-            //         JObject vc = GetJsonFromJwtToken(vpToken["vp"]["verifiableCredential"][0].ToString());
-            //         resp.Add(new JProperty("jti", vc["jti"].ToString()));
-            //     }
-            //     if (!string.IsNullOrWhiteSpace(callback.verifiedCredentialsData[0].expirationDate))
-            //     {
-            //         resp.Add(new JProperty("expirationDate", callback.verifiedCredentialsData[0].expirationDate));
-            //     }
-            //     if (!string.IsNullOrWhiteSpace(callback.verifiedCredentialsData[0].issuanceDate))
-            //     {
-            //         resp.Add(new JProperty("issuanceDate ", callback.verifiedCredentialsData[0].issuanceDate));
-            //     }
-            //     result = resp;
-            //     break;
-            // TBD
-            // case Constants.RequestStatus.SELFIE_TAKEN:
-            //     callback = JsonConvert.DeserializeObject<CallbackEvent>(reqState["callback"].ToString());
-            //     result = JObject.FromObject(new { status = requestStatus, message = "Selfie taken", photo = callback.photo });
-            //     break;
             default:
-                status.RequestStatus = Constants.RequestStatus.INVALID_REQUEST_STATUS;
+                status.RequestStatus = UserFlowStatusCodes.INVALID_REQUEST_STATUS;
 
                 // TBD add the request status
-                status.Message = Constants.RequestStatusMessage.INVALID_REQUEST_STATUS;
+                status.Message = UserMessages.INVALID_REQUEST_STATUS + " Received status: " + status.RequestStatus;
                 break;
         }
 

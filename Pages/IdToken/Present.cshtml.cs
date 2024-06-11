@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Caching.Memory;
 using WoodgroveDemo.Helpers;
 using WoodgroveDemo.Models;
-using WoodgroveDemo.Models.Manifest;
-using WoodgroveDemo.Models.Presentation;
+using Microsoft.Identity.VerifiedID.Manifest;
+using Microsoft.Identity.VerifiedID.Presentation;
 
 namespace WoodgroveDemo.Pages.IdToken
 {
@@ -18,7 +18,7 @@ namespace WoodgroveDemo.Pages.IdToken
         private TelemetryClient _telemetry;
 
         // UI elements
-        public Settings _settings { get; set; }
+        public AppSettings _AppSettings { get; set; }
 
         public PresentModel(TelemetryClient telemetry, IHttpClientFactory httpClientFactory, IConfiguration configuration, IMemoryCache cache)
         {
@@ -27,7 +27,7 @@ namespace WoodgroveDemo.Pages.IdToken
             _telemetry = telemetry;
 
             // Load the settings of this demo
-            _settings = new Settings(configuration, "IdToken", true);
+            _AppSettings = new AppSettings(configuration, "IdToken", true);
         }
 
         public void OnGet()
@@ -36,10 +36,10 @@ namespace WoodgroveDemo.Pages.IdToken
             AppInsightsHelper.TrackPage(_telemetry, this.Request);
 
             // Load the manifest so we can render it for testing purposes
-            _settings.ManifestContent = RequestHelper.GetCredentialManifest(_settings.ManifestUrl, _httpClientFactory, _cache, _settings.UseCache);
-            Manifest manifest = Manifest.Parse(_settings.ManifestContent);
-            _settings.CardDetails = manifest.Display;
-            _settings.ManifestContent = manifest.ToHtml();
+            _AppSettings.ManifestContent =  RequestHelper.GetCredentialManifest(_AppSettings.ManifestUrl, _httpClientFactory, _cache, _AppSettings.UseCache);
+            Manifest manifest = Manifest.Parse(_AppSettings.ManifestContent);
+            _AppSettings.CardDetails = manifest.Display;
+            _AppSettings.ManifestContent = manifest.ToHtml();
         }
     }
 }

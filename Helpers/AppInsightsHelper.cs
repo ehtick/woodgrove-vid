@@ -6,9 +6,9 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Caching.Memory;
 using WoodgroveDemo.Models;
-using WoodgroveDemo.Models.Issuance;
-using WoodgroveDemo.Models.Manifest;
-using WoodgroveDemo.Models.Presentation;
+using Microsoft.Identity.VerifiedID.Issuance;
+using Microsoft.Identity.VerifiedID.Manifest;
+using Microsoft.Identity.VerifiedID.Presentation;
 
 namespace WoodgroveDemo.Helpers;
 
