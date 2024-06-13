@@ -10,6 +10,7 @@ using WoodgroveDemo.Helpers;
 using WoodgroveDemo.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.VerifiedID;
+using Microsoft.Identity.VerifiedID.Callback;
 
 namespace WoodgroveDemo.Controllers;
 
@@ -54,7 +55,7 @@ public class CallbackController : ControllerBase
             _log.LogTrace("Reqeust body: " + body);
 
             // Parse the request body
-            CallbackEvent callback = CallbackEvent.Parse(body);
+            CallbackData callback = CallbackData.Parse(body);
             state = callback.State;
 
             // This endpoint is called by Microsoft Entra Verified ID which passes an API key.

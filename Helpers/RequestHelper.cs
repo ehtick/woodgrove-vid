@@ -96,7 +96,7 @@ public class RequestHelper
                 ClientName = settings.UX.ClientName,
                 //purpose = settings.UX.Purpose
             },
-            Callback = new Microsoft.Identity.VerifiedID.Callback()
+            Callback = new Microsoft.Identity.VerifiedID.CallbackDefinition()
             {
                 Url = settings.Api.URL(httpRequest),
                 State = Guid.NewGuid().ToString(),
@@ -173,7 +173,7 @@ public class RequestHelper
                 ClientName = settings.UX.ClientName,
                 Purpose = settings.UX.Purpose
             },
-            Callback = new Microsoft.Identity.VerifiedID.Callback()
+            Callback = new Microsoft.Identity.VerifiedID.CallbackDefinition()
             {
                 Url = settings.Api.URL(httpRequest),
                 State = Guid.NewGuid().ToString(),
